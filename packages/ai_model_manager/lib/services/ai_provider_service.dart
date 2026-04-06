@@ -249,7 +249,6 @@ class AiProviderApiService {
           '${_trimTrailingSlash(baseUrl)}/projects/-/locations/-/publishers/google/models/gemini-2.0-flash-001:generateContent';
       final response = await dio.post(
         url,
-        queryParameters: {'key': apiKey},
         data: {
           'contents': [
             {
@@ -260,7 +259,10 @@ class AiProviderApiService {
           ],
           'generationConfig': {'maxOutputTokens': 1},
         },
-        options: Options(headers: {'Content-Type': 'application/json'}),
+        options: Options(headers: {
+          'x-goog-api-key': apiKey,
+          'Content-Type': 'application/json',
+        }),
       );
       return response.statusCode == 200;
     } on DioException catch (e) {
@@ -353,7 +355,6 @@ class AiProviderApiService {
         case AiProviderType.vertexAiExpress:
           await dio.post(
             '$url/projects/-/locations/-/publishers/google/models/$modelId:generateContent',
-            queryParameters: {'key': apiKey},
             data: {
               'contents': [
                 {
@@ -364,7 +365,10 @@ class AiProviderApiService {
               ],
               'generationConfig': {'maxOutputTokens': 1},
             },
-            options: Options(headers: {'Content-Type': 'application/json'}),
+            options: Options(headers: {
+              'x-goog-api-key': apiKey,
+              'Content-Type': 'application/json',
+            }),
           );
       }
       return null; // 成功
