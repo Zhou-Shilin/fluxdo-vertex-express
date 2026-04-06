@@ -243,14 +243,14 @@ class AiChatService {
     }
 
     return dio.post<ResponseBody>(
-      '$baseUrl/projects/-/locations/-/publishers/google/models/$model:streamGenerateContent',
-      queryParameters: {'alt': 'sse'},
+      '$baseUrl/v1/publishers/google/models/$model:streamGenerateContent',
+      queryParameters: {
+        'key': apiKey,
+        'alt': 'sse',
+      },
       data: data,
       options: Options(
-        headers: {
-          'x-goog-api-key': apiKey,
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
         responseType: ResponseType.stream,
       ),
     );
