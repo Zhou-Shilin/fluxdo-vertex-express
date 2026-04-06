@@ -3,7 +3,8 @@ enum AiProviderType {
   openai('OpenAI', 'https://api.openai.com/v1'),
   openaiResponse('OpenAI-Response', 'https://api.openai.com/v1'),
   gemini('Gemini', 'https://generativelanguage.googleapis.com/v1beta'),
-  anthropic('Anthropic', 'https://api.anthropic.com/v1');
+  anthropic('Anthropic', 'https://api.anthropic.com/v1'),
+  vertexAiExpress('Vertex AI (Express)', 'https://aiplatform.googleapis.com/v1beta1');
 
   final String label;
   final String defaultBaseUrl;

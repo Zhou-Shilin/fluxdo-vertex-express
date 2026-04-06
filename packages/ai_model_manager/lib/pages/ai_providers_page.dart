@@ -239,6 +239,8 @@ class _ProviderCard extends StatelessWidget {
         return Colors.blue;
       case AiProviderType.anthropic:
         return Colors.orange;
+      case AiProviderType.vertexAiExpress:
+        return Colors.deepPurple;
     }
   }
 }

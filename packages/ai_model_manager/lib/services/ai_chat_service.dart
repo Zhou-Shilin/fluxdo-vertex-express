@@ -58,6 +58,11 @@ class AiChatService {
           response = await _sendAnthropic(
             dio, baseUrl, apiKey, model, messages, systemPrompt,
           );
+
+        case AiProviderType.vertexAiExpress:
+          response = await _sendVertexAiExpress(
+            dio, baseUrl, apiKey, model, messages, systemPrompt,
+          );
       }
 
       final byteStream = response.data!.stream.cast<Uint8List>();
@@ -201,6 +206,51 @@ class AiChatService {
           'anthropic-version': '2023-06-01',
           'Content-Type': 'application/json',
         },
+        responseType: ResponseType.stream,
+      ),
+    );
+  }
+
+  Future<Response<ResponseBody>> _sendVertexAiExpress(
+    Dio dio,
+    String baseUrl,
+    String apiKey,
+    String model,
+    List<Map<String, String>> messages,
+    String? systemPrompt,
+  ) {
+    // Vertex AI Express 使用与 Gemini 相同的 contents 格式
+    final contents = messages.map((m) {
+      final role = m['role'] == 'assistant' ? 'model' : 'user';
+      return {
+        'role': role,
+        'parts': [
+          {'text': m['content']},
+        ],
+      };
+    }).toList();
+
+    final data = <String, dynamic>{
+      'contents': contents,
+    };
+
+    if (systemPrompt != null) {
+      data['systemInstruction'] = {
+        'parts': [
+          {'text': systemPrompt},
+        ],
+      };
+    }
+
+    return dio.post<ResponseBody>(
+      '$baseUrl/projects/-/locations/-/publishers/google/models/$model:streamGenerateContent',
+      queryParameters: {
+        'key': apiKey,
+        'alt': 'sse',
+      },
+      data: data,
+      options: Options(
+        headers: {'Content-Type': 'application/json'},
         responseType: ResponseType.stream,
       ),
     );

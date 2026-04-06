@@ -69,6 +69,15 @@ class AiProviderApiService {
     AiModel(id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku'),
   ];
 
+  /// Vertex AI Express 预定义模型列表
+  static const List<AiModel> _vertexAiExpressModels = [
+    AiModel(id: 'gemini-2.5-pro-preview-05-06', name: 'Gemini 2.5 Pro Preview'),
+    AiModel(id: 'gemini-2.0-flash-001', name: 'Gemini 2.0 Flash'),
+    AiModel(id: 'gemini-2.0-flash-lite-001', name: 'Gemini 2.0 Flash Lite'),
+    AiModel(id: 'gemini-1.5-pro-002', name: 'Gemini 1.5 Pro'),
+    AiModel(id: 'gemini-1.5-flash-002', name: 'Gemini 1.5 Flash'),
+  ];
+
   Dio _createDio() {
     final dio = Dio(BaseOptions(
       connectTimeout: const Duration(seconds: 15),
@@ -94,6 +103,8 @@ class AiProviderApiService {
         return _fetchGeminiModels(baseUrl, apiKey);
       case AiProviderType.anthropic:
         return _anthropicModels;
+      case AiProviderType.vertexAiExpress:
+        return _vertexAiExpressModels;
     }
   }
 
@@ -112,6 +123,8 @@ class AiProviderApiService {
           return await _checkGeminiConnectivity(baseUrl, apiKey);
         case AiProviderType.anthropic:
           return await _checkAnthropicConnectivity(baseUrl, apiKey);
+        case AiProviderType.vertexAiExpress:
+          return await _checkVertexAiExpressConnectivity(baseUrl, apiKey);
       }
     } catch (_) {
       return false;
@@ -228,6 +241,36 @@ class AiProviderApiService {
     }
   }
 
+  Future<bool> _checkVertexAiExpressConnectivity(
+      String baseUrl, String apiKey) async {
+    final dio = _createDio();
+    try {
+      final url =
+          '${_trimTrailingSlash(baseUrl)}/projects/-/locations/-/publishers/google/models/gemini-2.0-flash-001:generateContent';
+      final response = await dio.post(
+        url,
+        queryParameters: {'key': apiKey},
+        data: {
+          'contents': [
+            {
+              'parts': [
+                {'text': 'hi'}
+              ]
+            }
+          ],
+          'generationConfig': {'maxOutputTokens': 1},
+        },
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+      return response.statusCode == 200;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 400) return true;
+      return false;
+    } finally {
+      dio.close();
+    }
+  }
+
   /// 测试指定模型是否可用（发送最小请求）
   ///
   /// 成功返回 null，失败返回错误信息
@@ -305,6 +348,23 @@ class AiProviderApiService {
               'anthropic-version': '2023-06-01',
               'Content-Type': 'application/json',
             }),
+          );
+
+        case AiProviderType.vertexAiExpress:
+          await dio.post(
+            '$url/projects/-/locations/-/publishers/google/models/$modelId:generateContent',
+            queryParameters: {'key': apiKey},
+            data: {
+              'contents': [
+                {
+                  'parts': [
+                    {'text': 'hi'}
+                  ]
+                }
+              ],
+              'generationConfig': {'maxOutputTokens': 1},
+            },
+            options: Options(headers: {'Content-Type': 'application/json'}),
           );
       }
       return null; // 成功

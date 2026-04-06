@@ -98,6 +98,16 @@ class SseTransformer {
           return delta?['text'] as String?;
         }
         return null;
+
+      case AiProviderType.vertexAiExpress:
+        // Vertex AI Express 使用与 Gemini 相同的响应格式
+        // candidates[0].content.parts[0].text
+        final candidates = json['candidates'] as List<dynamic>?;
+        if (candidates == null || candidates.isEmpty) return null;
+        final content = candidates[0]['content'] as Map<String, dynamic>?;
+        final parts = content?['parts'] as List<dynamic>?;
+        if (parts == null || parts.isEmpty) return null;
+        return parts[0]['text'] as String?;
     }
   }
 }
